@@ -20,7 +20,7 @@ def remove_duplicates_and_zeros(input_csv, output_csv):
     # Remove duplicate rows, keeping the first occurrence
     df_no_duplicates = df.drop_duplicates()
 
-    # Remove rows where the 3rd and 4th columns (index 2(lat) and 3(lon) in zero-based indexing) have values equal to 0
+    # Remove rows where the 3rd and 4th columns (index 3(lat) and 4(lon) in zero-based indexing) have values equal to 0
     df_no_zeros = df_no_duplicates.loc[~((df_no_duplicates.iloc[:, 3] == 0) & (df_no_duplicates.iloc[:, 4] == 0))]
 
     # Save the DataFrame to a new CSV file

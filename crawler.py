@@ -22,11 +22,11 @@ def getLatLng(addr):
         "Authorization": "KakaoAK 794e600cd25dbe707dccdf154dde8021"}
     # get 방식으로 주소를 포함한 링크를 헤더와 넘기면 result에 json형식의 주소와 위도경도 내용들이 출력된다.
     result = json.loads(str(requests.get(url, headers=headers).text))
-    status_code = requests.get(url, headers=headers).status_code
-    if(status_code != 200):
-        print(
-            f"ERROR: Unable to call rest api, http_status_coe: {status_code}")
-        return 0
+    # status_code = requests.get(url, headers=headers).status_code
+    # if(status_code != 200):
+    #     print(
+    #         f"ERROR: Unable to call rest api, http_status_coe: {status_code}")
+    #     return 0
 
     try:
         match_first = result['documents'][0]['address']
@@ -174,8 +174,14 @@ def get_food_information(menu_url, addr_urls, SCROLL_PAUSE_TIME, FILE_NAME):
             # 위도 경도
             lat, lon = getLatLng(loc_address) 
             time.sleep(1)
+            if lat == 0 and lon == 0: 
+                print('api가 응답하지 않습니다. timesleep 후 재시도 합니다.')
+                time.sleep(2)
+                lat, lon = getLatLng(loc_address) 
 
-            restaurants_data.append([name, best_menu_list, rest_score, loc_address, lat, lon, img_url])
+            
+            if lat != 0 and lon != 0:
+                restaurants_data.append([name, best_menu_list, rest_score, loc_address, lat, lon, img_url])
             f = open(FILE_NAME, "a", encoding='utf-8-sig', newline='')
             writer = csv.writer(f)
             writer.writerow([name, best_menu_list, rest_score, loc_address, lat, lon, img_url])

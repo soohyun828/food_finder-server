@@ -33,16 +33,17 @@ def csv2db(csv_filename):
         dbcursor = mydb.cursor()
 
         # 테이블 만들기
-        # sql = """CREATE TABLE restaurants (
-        #     resname VARCHAR(100), 
-        #     menu VARCHAR(100),
-        #     address VARCHAR(200),
-        #     lat VARCHAR(20), 
-        #     lon VARCHAR(20),
-        #     imageURL VARCHAR(150),
-        #     category VARCHAR(10)
-        #     )"""
-        # dbcursor.execute(sql)
+        sql = """CREATE TABLE IF NOT EXISTS restaurants (
+            resnum INT PRIMARY KEY AUTO_INCREMENT,
+            resname VARCHAR(100), 
+            menu VARCHAR(100),
+            address VARCHAR(200),
+            lat DECIMAL(10, 8), 
+            lon DECIMAL(11, 8),
+            imageURL VARCHAR(150),
+            category VARCHAR(10)
+            )"""
+        dbcursor.execute(sql)
 
         # 테이블 전체 비우기 
         # dbcursor.execute("TRUNCATE restaurants")
@@ -50,13 +51,34 @@ def csv2db(csv_filename):
 
 ###################################
         # insert 쿼리문
-        sql = "INSERT INTO restaurants (resname, menu, address, lat, lon, imageURL, category) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        sql_insert = "INSERT INTO restaurants (resnum, resname, menu, address, lat, lon, imageURL, category) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        # select 쿼리문
+        sql_select = "SELECT * FROM restaurants WHERE resname = %s AND menu = %s AND address = %s AND category = %s"
 
         # 파일 읽기
         with open(csv_filename, 'r', encoding='UTF-8', newline='') as f:
             rd = csv.reader(f)
+
+            # 기존 테이블의 가장 큰 resnum 값을 가져오기
+            dbcursor.execute("SELECT MAX(resnum) FROM restaurants")
+            max_resnum = dbcursor.fetchone()[0]
+
+            # 가장 큰 resnum 값이 없다면(테이블 비어있으면) 1로 초기화
+            if max_resnum :
+                max_resnum = max_resnum + 1
+            else:
+                max_resnum = 1
+
             for row in rd:
-                dbcursor.execute(sql, (row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+                # 데이터 비교
+                dbcursor.execute(sql_select, (row[0], row[1], row[2], row[6]))
+                existing_data = dbcursor.fetchone()
+
+                if not existing_data:
+                    dbcursor.execute(sql_insert, (max_resnum, row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+                
+                # resnum 값 증가
+                max_resnum += 1
 
         mydb.commit()
         print("OK")
@@ -75,7 +97,7 @@ if __name__ == "__main__":
     input_dir = root_directory + 'crawling_data/'
     output_dir = root_directory + 'processed_data/'
     for input_filename in os.listdir(input_dir):
-        remove_duplicates_and_zeros(os.path.join(input_dir, input_filename), os.path.join(output_dir, input_filename))
+        # remove_duplicates_and_zeros(os.path.join(input_dir, input_filename), os.path.join(output_dir, input_filename))
         csv2db(os.path.join(output_dir, input_filename))
 
 # Close the database connection outside the loop

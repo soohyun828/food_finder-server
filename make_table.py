@@ -42,6 +42,16 @@ try:
         category VARCHAR(255)
         )"""
 
+    dbcursor.execute(sql)
+    
+    sql = """CREATE TABLE IF NOT EXISTS users (
+        username VARCHAR(255) PRIMARY KEY,
+        password VARCHAR(255), 
+        phoneNumber VARCHAR(45),        
+        )"""
+        
+    dbcursor.execute(sql)
+
     # 테이블 전체 비우기 
     # dbcursor.execute("TRUNCATE restaurants")
     # mydb.commit()
